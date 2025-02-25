@@ -16,7 +16,7 @@
  To read more about using these font, please visit the Next.js documentation:
  - App Directory: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
  - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
- **/
+ * */
 import Link from 'next/link';
 import { MountainIcon } from '@/app/components/icon/mountain';
 import { GithubIcon } from '@/app/components/icon/github';
@@ -25,21 +25,23 @@ import { Button } from '@/app/components/ui/button';
 export function Navbar() {
   return (
     <header className="flex h-16 w-full absolute top-0">
-      <div
-        className="container mx-auto max-w-screen-lg flex h-16 w-full items-center justify-between bg-background px-4 md:px-6">
+      <div className="container mx-auto max-w-screen-lg flex h-16 w-full items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2" prefetch={false}>
           <MountainIcon className="h-6 w-6" />
           <span className="text-lg font-semibold">山</span>
         </Link>
-        <Button variant="ghost" size="icon" className="ml-auto" asChild>
-          <Link href="https://github.com/mx1700/cloudflare-image-share" target="_blank" className="flex items-center gap-2" prefetch={false}>
-            <GithubIcon className="h-6 w-6" />
-            <span className="sr-only">GitHub</span>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="ml-auto" asChild>
+            <Link href="https://github.com/mx1700/cloudflare-image-share" target="_blank" className="flex items-center gap-2" prefetch={false}>
+              <GithubIcon className="h-6 w-6" />
+              <span className="sr-only">GitHub</span>
+            </Link>
+          </Button>
+          <Link href="/manager">
+            管理
           </Link>
-        </Button>
+        </div>
       </div>
     </header>
-  )
+  );
 }
-
-

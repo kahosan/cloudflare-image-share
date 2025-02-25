@@ -1,12 +1,8 @@
-import React, { DragEvent } from 'react';
+import type { DragEvent } from 'react';
 import { getFileExtension } from '@/app/lib/utils';
 import { useToast } from '@/app/components/ui/use-toast';
 
-const FileDropZone = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLDivElement> & { onFileDrop: (files: FileList) => void, accept: string }
->(({ className,children,onFileDrop, accept,...props }, ref) => {
-
+function FileDropZone({ ref, className, children, onFileDrop, accept, ...props }: React.HTMLAttributes<HTMLDivElement> & { onFileDrop: (files: FileList) => void, accept: string } & { ref?: React.RefObject<HTMLParagraphElement | null> }) {
   const { toast } = useToast();
 
   const handleDragOver = (event: DragEvent) => {
@@ -22,10 +18,10 @@ const FileDropZone = React.forwardRef<
     event.preventDefault();
     const files = event.dataTransfer.files;
     const file = files[0];
-    if(accept && !checkFileType(file.name, accept)) {
+    if (accept && !checkFileType(file.name, accept)) {
       toast({
         variant: 'destructive',
-        title: 'File type not support.',
+        title: 'File type not support.'
       });
       return;
     }
@@ -44,19 +40,18 @@ const FileDropZone = React.forwardRef<
       {children}
     </div>
   );
-})
+}
 
-FileDropZone.displayName = "CardTitle"
+FileDropZone.displayName = 'CardTitle';
 
 export default FileDropZone;
 
 function checkFileType(filename: string, accept: string) {
-  const allowTypes = accept.split(',').map(t => t.trim())
+  const allowTypes = accept.split(',').map(t => t.trim());
   const extName = '.' + getFileExtension(filename);
-  for(let type of allowTypes) {
-    if(type === extName) {
+  for (const type of allowTypes) {
+    if (type === extName)
       return true;
-    }
   }
   return false;
 }

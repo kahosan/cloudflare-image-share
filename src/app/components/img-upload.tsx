@@ -16,45 +16,49 @@
  To read more about using these font, please visit the Next.js documentation:
  - App Directory: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
  - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
- **/
+ * */
 'use client';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/app/components/ui/card';
-import {Progress} from '@/app/components/ui/progress';
-import {Button} from '@/app/components/ui/button';
-import React, {Reducer, useCallback, useEffect, useReducer, useRef, useState} from 'react';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Progress } from '@/app/components/ui/progress';
+import { Button } from '@/app/components/ui/button';
+import type { Reducer } from 'react';
+// eslint-disable-next-line sukka/prefer-fetch, @typescript-eslint/no-restricted-imports -- ignore
 import axios from 'axios';
-import {Input} from '@/app/components/ui/input';
-import {useToast} from '@/app/components/ui/use-toast';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { Input } from '@/app/components/ui/input';
+import { useToast } from '@/app/components/ui/use-toast';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/app/components/ui/dropdown-menu';
-import {ChevronDownIcon} from "@/app/components/icon/chevron-down-icon";
-import {HtmlIcon} from "@/app/components/icon/html-icon";
-import {MarkdownIcon} from "@/app/components/icon/markdown-icon";
-import {BBCodeIcon} from "@/app/components/icon/bb-code-icon";
-import {UrlIcon} from "@/app/components/icon/url-icon";
-import {FileSelectZone, FileSelectZoneRef} from "@/app/components/file-select-zone";
+import { ChevronDownIcon } from '@/app/components/icon/chevron-down-icon';
+import { HtmlIcon } from '@/app/components/icon/html-icon';
+import { MarkdownIcon } from '@/app/components/icon/markdown-icon';
+import { BBCodeIcon } from '@/app/components/icon/bb-code-icon';
+import { UrlIcon } from '@/app/components/icon/url-icon';
+import type { FileSelectZoneRef } from '@/app/components/file-select-zone';
+import { FileSelectZone } from '@/app/components/file-select-zone';
 import imageCompression from 'browser-image-compression';
-import {sleep} from "@/app/lib/utils";
+import { sleep } from '@/app/lib/utils';
 
-type ImgUploadStatus = 'idle' | 'selected' | 'compressing' |'uploading' | 'completed'
-type ImgUploadState = {
-  status: ImgUploadStatus;
-  file: File | null;
-  fileKey: string;
-  progress: number;
+type ImgUploadStatus = 'idle' | 'selected' | 'compressing' | 'uploading' | 'completed';
+interface ImgUploadState {
+  status: ImgUploadStatus
+  file: File | null
+  fileKey: string
+  progress: number
 }
 
 type ImgUploadAction =
-    | { type: 'idle' }
-    | { type: 'selected'; file: File }
-    | { type: 'compressing'; progress: number }
-    | { type: 'uploading'; progress: number }
-    | { type: 'completed'; fileKey: string }
-    | { type: 'error'; error: string }
+  | { type: 'idle' }
+  | { type: 'selected', file: File }
+  | { type: 'compressing', progress: number }
+  | { type: 'uploading', progress: number }
+  | { type: 'completed', fileKey: string }
+  | { type: 'error', error: string };
 
 const uploadReducer: Reducer<ImgUploadState, ImgUploadAction> = (state, action) => {
   switch (action.type) {
@@ -70,25 +74,27 @@ const uploadReducer: Reducer<ImgUploadState, ImgUploadAction> = (state, action) 
       return { ...state, status: 'completed', fileKey: action.fileKey, progress: 100 };
     case 'error':
       return { ...state, status: 'selected', fileKey: '', progress: 0 };
+    default:
+      throw new Error('Invalid action');
   }
-}
+};
 
 const initialState: ImgUploadState = { status: 'idle', file: null, fileKey: '', progress: 0 };
 
 export interface ImgUploadProps {
-  maxImageSize: number;
-  enableImageCompression: boolean;
-  compressedImageMaxSize: number;
-  maxImageWidthOrHeight: number;
+  maxImageSize: number
+  enableImageCompression: boolean
+  compressedImageMaxSize: number
+  maxImageWidthOrHeight: number
 }
 
 export function ImgUpload(
-    {
-      maxImageSize,
-      enableImageCompression,
-      compressedImageMaxSize,
-      maxImageWidthOrHeight
-    }: ImgUploadProps
+  {
+    maxImageSize,
+    enableImageCompression,
+    compressedImageMaxSize,
+    maxImageWidthOrHeight
+  }: ImgUploadProps
 ) {
   const [{ status, file, fileKey, progress }, dispatch] = useReducer(uploadReducer, initialState);
   const [copyLink, setCopyLink] = useState('');
@@ -100,15 +106,15 @@ export function ImgUpload(
   const fileUrl = filePath && new URL(filePath, document.baseURI).href;
 
   const handleFileChange = useCallback((file: File) => {
-    dispatch({ type: 'selected', file })
+    dispatch({ type: 'selected', file });
   }, []);
 
   const handleFileSelectError = useCallback((error: string) => {
     toast({
       variant: 'destructive',
-      title: error,
+      title: error
     });
-  }, [toast])
+  }, [toast]);
 
   // useEffect(() => {
   //   console.log('ImgUpload handleFileChange change')
@@ -122,20 +128,20 @@ export function ImgUpload(
     if (copyLink) {
       await navigator.clipboard.writeText(copyLink);
       toast({
-        description: ' 🎉 Copied URL to clipboard.',
+        description: ' 🎉 Copied URL to clipboard.'
       });
     }
   };
 
   const openFileSelect = () => {
     fileZoneRef.current?.openFileSelect();
-  }
+  };
 
   const handleUpload = async () => {
     if (!file) {
       toast({
         variant: 'destructive',
-        title: 'No file selected.',
+        title: 'No file selected.'
       });
       return;
     }
@@ -143,7 +149,7 @@ export function ImgUpload(
     try {
       const formData = new FormData();
 
-      if(enableImageCompression && file.size > compressedImageMaxSize) {
+      if (enableImageCompression && file.size > compressedImageMaxSize) {
         dispatch({ type: 'compressing', progress: 0 });
         const options = {
           maxSizeMB: compressedImageMaxSize,
@@ -151,12 +157,12 @@ export function ImgUpload(
           useWebWorker: true,
           initialQuality: 0.8,
           alwaysKeepResolution: true,
-          onProgress: (progress: number) => {
-            dispatch({ type: 'compressing', progress: progress });
+          onProgress(progress: number) {
+            dispatch({ type: 'compressing', progress });
           }
-        }
+        };
         const compressedFile = await imageCompression(file, options);
-        await sleep(500); //暂停是为了显示进度条的完成状态，否则会感觉压缩没有完成
+        await sleep(500); // 暂停是为了显示进度条的完成状态，否则会感觉压缩没有完成
         const newFile = new File([compressedFile], file.name, { type: compressedFile.type });
         formData.append('file', newFile);
       } else {
@@ -166,30 +172,30 @@ export function ImgUpload(
       dispatch({ type: 'uploading', progress: 0 });
 
       const response = await axios.post('/api/upload', formData, {
-        onUploadProgress: function(progressEvent) {
+        onUploadProgress(progressEvent) {
           if (progressEvent.lengthComputable && progressEvent.total) {
             const percentComplete = Math.floor((progressEvent.loaded / progressEvent.total) * 100);
             dispatch({ type: 'uploading', progress: percentComplete });
           }
-        },
+        }
       });
 
       const data = response.data;
       dispatch({ type: 'completed', fileKey: data.key });
       toast({
-        description: ' 👏 Upload completed.',
+        description: ' 👏 Upload completed.'
       });
     } catch (e: any) {
       let error: string;
-      if(typeof e === 'string') {
+      if (typeof e === 'string')
         error = e;
-      } else {
+      else
         error = e.response?.data?.message || 'Upload failed.';
-      }
-      dispatch({ type: 'error', error })
+
+      dispatch({ type: 'error', error });
       toast({
         variant: 'destructive',
-        title: error,
+        title: error
       });
     }
   };
@@ -201,40 +207,42 @@ export function ImgUpload(
     switch (status) {
       case 'idle':
         return (
-            <Button type="button" onClick={openFileSelect} className="w-full">
-              Select Image
-            </Button>
+          <Button type="button" onClick={openFileSelect} className="w-full">
+            Select Image
+          </Button>
         );
       case 'selected':
         return (
-            <Button type="button" onClick={handleUpload} className="w-full">
-              Upload
-            </Button>
+          <Button type="button" onClick={handleUpload} className="w-full">
+            Upload
+          </Button>
         );
       case 'compressing':
         return (
-            <Button type="button" disabled={true} className="w-full">
-              Compressing...
-            </Button>
+          <Button type="button" disabled className="w-full">
+            Compressing...
+          </Button>
         );
       case 'uploading':
         return (
-            <Button type="button" variant='success' disabled={true} className="w-full">
-              Uploading...
-            </Button>
+          <Button type="button" variant="success" disabled className="w-full">
+            Uploading...
+          </Button>
         );
       case 'completed':
         return (
-            <Button type="button" variant='success' onClick={handleCopyUrl} className="w-full">
-              ✨ Copy to Clipboard ✨
-            </Button>
+          <Button type="button" variant="success" onClick={handleCopyUrl} className="w-full">
+            ✨ Copy to Clipboard ✨
+          </Button>
         );
+      default:
+        throw new Error('Invalid status');
     }
   }
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/*<div className="absolute inset-0 bg-gradient-to-r from-[#e0f2fe] to-[#bae6fd] opacity-20 blur-xl" />*/}
+      {/* <div className="absolute inset-0 bg-gradient-to-r from-[#e0f2fe] to-[#bae6fd] opacity-20 blur-xl" /> */}
       <Card className="z-10 bg-white bg-opacity-40 rounded-none border-0 shadow-none sm:rounded-xl sm:border sm:shadow">
         <CardHeader>
           <CardTitle>Upload Images</CardTitle>
@@ -242,13 +250,14 @@ export function ImgUpload(
         </CardHeader>
         <CardContent className="grid gap-4">
           <FileSelectZone
-              ref={fileZoneRef}
-              disabled={selectFileDisabled}
-              onFileChange={handleFileChange}
-              onError={handleFileSelectError}
-              file={file}
-              className="flex flex-col items-center justify-center h-[272px] border-2 border-dashed rounded-lg cursor-pointer"
-              maxImageSize={maxImageSize}
+            key={fileKey}
+            ref={fileZoneRef}
+            disabled={selectFileDisabled}
+            onFileChange={handleFileChange}
+            onError={handleFileSelectError}
+            file={file}
+            className="flex flex-col items-center justify-center h-[272px] border-2 border-dashed rounded-lg cursor-pointer"
+            maxImageSize={maxImageSize}
           />
           <Progress key={status} indicatorClassName={status === 'compressing' ? 'bg-gray-500' : 'bg-green-700'} value={sProgress} />
           <LinkCopyBox link={fileUrl} filename={file?.name} onChange={setCopyLink} />
@@ -259,30 +268,25 @@ export function ImgUpload(
   );
 }
 
-type LinkType = 'url' | 'html' | 'markdown' | 'bbCode'
+type LinkType = 'url' | 'html' | 'markdown' | 'bbCode';
 
 function LinkCopyBox({ link, filename, onChange }: {
-  link: string,
-  filename?: string,
+  link: string
+  filename?: string
   onChange?: (value: string) => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [type, setType] = useState<LinkType>('url');
-  const [copyLink, setCopyLink] = useState(getLink(type, link, filename || 'image'));
+
+  const copyLink = getLink(type, link, filename || 'image');
 
   useEffect(() => {
-    setCopyLink(getLink(type, link, filename || 'image'));
-  }, [type, link, filename]);
-
-  useEffect(() => {
-    if (onChange) {
+    if (onChange)
       onChange(copyLink);
-    }
   }, [copyLink, onChange]);
   const handleInputFocus = () => {
-    if (inputRef.current) {
+    if (inputRef.current)
       inputRef.current.select();
-    }
   };
   const handleTypeChange = (value: LinkType) => {
     return () => {
@@ -292,13 +296,24 @@ function LinkCopyBox({ link, filename, onChange }: {
 
   return (
     <div className="flex items-center gap-2">
-      <Input type="text" disabled={!link} placeholder="Image URL" ref={inputRef} className="flex-1"
-             onFocus={handleInputFocus} value={copyLink} readOnly />
+      <Input
+        type="text"
+        disabled={!link}
+        placeholder="Image URL"
+        ref={inputRef}
+        className="flex-1"
+        onFocus={handleInputFocus}
+        value={copyLink}
+        readOnly
+      />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button type="button" variant="outline"
-                  className={'pr-2 pl-3 bg-transparent text-muted-foreground focus-visible:ring-0 hover:bg-transparent'}>
-            <CodeIcon type={type} className={'h-4 w-4 mr-1'} />
+          <Button
+            type="button"
+            variant="outline"
+            className="pr-2 pl-3 bg-transparent text-muted-foreground focus-visible:ring-0 hover:bg-transparent"
+          >
+            <CodeIcon type={type} className="h-4 w-4 mr-1" />
             <ChevronDownIcon className="h-4 w-4 text-gray-400" />
           </Button>
         </DropdownMenuTrigger>
@@ -329,7 +344,7 @@ function getLink(type: LinkType, link: string, filename: string) {
       return `<img src="${link}" alt="${filename}" />`;
     case 'bbCode':
       return `[img]${link}[/img]`;
-    case'markdown':
+    case 'markdown':
       return `![${filename}](${link})`;
     default:
       return link;
@@ -344,10 +359,9 @@ function CodeIcon({ type, className }: { type: LinkType, className?: string }) {
       return <HtmlIcon className={className} />;
     case 'bbCode':
       return <BBCodeIcon className={className} />;
-    case'markdown':
+    case 'markdown':
       return <MarkdownIcon className={className} />;
     default:
       return <UrlIcon className={className} />;
   }
 }
-

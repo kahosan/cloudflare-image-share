@@ -16,53 +16,53 @@ arimo({
 To read more about using these font, please visit the Next.js documentation:
 - App Directory: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
-**/
-"use client"
+* */
+'use client';
 
-import Link from "next/link"
-import { Label } from "@/app/components/ui/label"
-import { Input } from "@/app/components/ui/input"
-import { Button } from "@/app/components/ui/button"
-import React, { KeyboardEvent, useState } from 'react';
+import Link from 'next/link';
+import { Label } from '@/app/components/ui/label';
+import { Input } from '@/app/components/ui/input';
+import { Button } from '@/app/components/ui/button';
+import type { KeyboardEvent } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GithubIcon } from '@/app/components/icon/github';
 import { MountainIcon } from '@/app/components/icon/mountain';
 
 export function Login() {
-  const [password, setPassword] = useState("")
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [password, setPassword] = useState('');
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const onPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-  }
+    setPassword(e.target.value);
+  };
 
   const onSubmit = async () => {
     setLoading(true);
     try {
-      const ret = await fetch("/api/login", {
-        method: "POST",
+      const ret = await fetch('/api/login', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ password }),
-      }).then((res) => res.json<{ pass: boolean, message: string | undefined }>());
-      if(ret.pass) {
-        router.push("/");
+        body: JSON.stringify({ password })
+      }).then(res => res.json<{ pass: boolean, message: string | undefined }>());
+      if (ret.pass) {
+        router.push('/');
         return;
       }
-      alert(ret.message || "Login Failed")
+      alert(ret.message || 'Login Failed');
       setLoading(false);
     } catch (e: any) {
       setLoading(false);
-      alert(e.message || "Login Failed")
+      alert(e.message || 'Login Failed');
     }
-  }
+  };
 
   const handleKeyPress = async (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter')
       await onSubmit();
-    }
   };
 
   return (
@@ -97,5 +97,5 @@ export function Login() {
         </div>
       </div>
     </div>
-  )
+  );
 }
