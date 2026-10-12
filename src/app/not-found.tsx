@@ -37,7 +37,7 @@ const styles = {
 export default function NotFound() {
   return (
     <>
-      <title>404: This page could not be found.</title>
+      <title>404：页面不存在</title>
       <div style={styles.error}>
         <div>
           <style
@@ -50,7 +50,7 @@ export default function NotFound() {
             404
           </h1>
           <div style={styles.desc}>
-            <h2 style={styles.h2}>This page could not be found.</h2>
+            <h2 style={styles.h2}>页面不存在</h2>
           </div>
         </div>
       </div>

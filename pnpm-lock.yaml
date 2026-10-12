@@ -41,9 +41,6 @@ importers:
       jose:
         specifier: ^6.0.6
         version: 6.0.6
-      mime:
-        specifier: ^4.0.6
-        version: 4.0.6
       next:
         specifier: 15.1.7
         version: 15.1.7(@babel/core@7.26.9)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -2658,11 +2655,6 @@ packages:
   mime@3.0.0:
     resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
     engines: {node: '>=10.0.0'}
-    hasBin: true
-
-  mime@4.0.6:
-    resolution: {integrity: sha512-4rGt7rvQHBbaSOF9POGkk1ocRP16Md1x36Xma8sz8h8/vfCUI2OtEIeCqe4Ofes853x4xDoPiFLIT47J5fI/7A==}
-    engines: {node: '>=16'}
     hasBin: true
 
   miniflare@3.20250214.0:
@@ -6249,8 +6241,6 @@ snapshots:
       mime-db: 1.52.0
 
   mime@3.0.0: {}
-
-  mime@4.0.6: {}
 
   miniflare@3.20250214.0:
     dependencies:

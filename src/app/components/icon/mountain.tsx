@@ -1,4 +1,4 @@
-export function MountainIcon(props: any) {
+export function MountainIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

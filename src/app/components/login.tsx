@@ -28,11 +28,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GithubIcon } from '@/app/components/icon/github';
 import { MountainIcon } from '@/app/components/icon/mountain';
+import { useToast } from '@/app/components/ui/use-toast';
 
 export function Login() {
   const [password, setPassword] = useState('');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const onPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -52,12 +54,11 @@ export function Login() {
         router.push('/');
         return;
       }
-      alert(ret.message || 'Login Failed');
-      setLoading(false);
-    } catch (e: any) {
-      setLoading(false);
-      alert(e.message || 'Login Failed');
+      toast({ variant: 'destructive', title: ret.message || '登录失败' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: e instanceof Error ? e.message : '登录失败' });
     }
+    setLoading(false);
   };
 
   const handleKeyPress = async (event: KeyboardEvent) => {
@@ -73,24 +74,24 @@ export function Login() {
         </Link>
         <div className="w-full space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">密码</Label>
             <Input
               id="password"
               type="password"
               disabled={loading}
-              placeholder="Enter your password"
+              placeholder="请输入密码"
               required
               onChange={onPasswordChange}
               onKeyDown={handleKeyPress}
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading} onClick={onSubmit}>
-            { loading ? 'Please wait' : 'Sign In'}
+            { loading ? '请稍候' : '登录'}
           </Button>
         </div>
         <div className="mt-4 flex w-full items-center justify-end">
           <Button variant="ghost" size="icon" className="ml-auto" asChild>
-            <Link href="https://github.com/mx1700/cloudflare-image-share" target="_blank">
+            <Link href="https://github.com/kahosan/cloudflare-image-share" target="_blank">
               <GithubIcon className="h-6 w-6" />
             </Link>
           </Button>

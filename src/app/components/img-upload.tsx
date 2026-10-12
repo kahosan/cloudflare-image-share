@@ -24,7 +24,7 @@ import { Progress } from '@/app/components/ui/progress';
 import { Button } from '@/app/components/ui/button';
 import type { Reducer } from 'react';
 // eslint-disable-next-line sukka/prefer-fetch, @typescript-eslint/no-restricted-imports -- ignore
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { Input } from '@/app/components/ui/input';
 import { useToast } from '@/app/components/ui/use-toast';
@@ -43,6 +43,8 @@ import type { FileSelectZoneRef } from '@/app/components/file-select-zone';
 import { FileSelectZone } from '@/app/components/file-select-zone';
 import imageCompression from 'browser-image-compression';
 import { sleep } from '@/app/lib/utils';
+import type { LinkType } from '@/app/lib/link-format';
+import { formatLink } from '@/app/lib/link-format';
 
 type ImgUploadStatus = 'idle' | 'selected' | 'compressing' | 'uploading' | 'completed';
 interface ImgUploadState {
@@ -116,19 +118,11 @@ export function ImgUpload(
     });
   }, [toast]);
 
-  // useEffect(() => {
-  //   console.log('ImgUpload handleFileChange change')
-  // }, [handleFileChange]);
-  //
-  // useEffect(() => {
-  //   console.log('ImgUpload handleFileSelectError change')
-  // }, [handleFileSelectError]);
-
   const handleCopyUrl = async () => {
     if (copyLink) {
       await navigator.clipboard.writeText(copyLink);
       toast({
-        description: ' 🎉 Copied URL to clipboard.'
+        description: '🎉 已复制到剪贴板'
       });
     }
   };
@@ -141,7 +135,7 @@ export function ImgUpload(
     if (!file) {
       toast({
         variant: 'destructive',
-        title: 'No file selected.'
+        title: '请先选择图片'
       });
       return;
     }
@@ -149,7 +143,12 @@ export function ImgUpload(
     try {
       const formData = new FormData();
 
-      if (enableImageCompression && file.size > compressedImageMaxSize) {
+      // file.size 是字节，compressedImageMaxSize 是 MB；GIF 重新编码会丢失动画，直接跳过
+      const needCompress = enableImageCompression
+        && file.type !== 'image/gif'
+        && file.size > compressedImageMaxSize * 1024 * 1024;
+
+      if (needCompress) {
         dispatch({ type: 'compressing', progress: 0 });
         const options = {
           maxSizeMB: compressedImageMaxSize,
@@ -183,14 +182,14 @@ export function ImgUpload(
       const data = response.data;
       dispatch({ type: 'completed', fileKey: data.key });
       toast({
-        description: ' 👏 Upload completed.'
+        description: '👏 上传完成'
       });
-    } catch (e: any) {
-      let error: string;
-      if (typeof e === 'string')
-        error = e;
-      else
-        error = e.response?.data?.message || 'Upload failed.';
+    } catch (e) {
+      let error = '上传失败';
+      if (isAxiosError<{ message?: string }>(e))
+        error = e.response?.data.message || error;
+      else if (e instanceof Error)
+        error = e.message || error;
 
       dispatch({ type: 'error', error });
       toast({
@@ -208,31 +207,31 @@ export function ImgUpload(
       case 'idle':
         return (
           <Button type="button" onClick={openFileSelect} className="w-full">
-            Select Image
+            选择图片
           </Button>
         );
       case 'selected':
         return (
           <Button type="button" onClick={handleUpload} className="w-full">
-            Upload
+            上传
           </Button>
         );
       case 'compressing':
         return (
           <Button type="button" disabled className="w-full">
-            Compressing...
+            压缩中...
           </Button>
         );
       case 'uploading':
         return (
           <Button type="button" variant="success" disabled className="w-full">
-            Uploading...
+            上传中...
           </Button>
         );
       case 'completed':
         return (
           <Button type="button" variant="success" onClick={handleCopyUrl} className="w-full">
-            ✨ Copy to Clipboard ✨
+            ✨ 复制链接 ✨
           </Button>
         );
       default:
@@ -242,11 +241,10 @@ export function ImgUpload(
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* <div className="absolute inset-0 bg-gradient-to-r from-[#e0f2fe] to-[#bae6fd] opacity-20 blur-xl" /> */}
       <Card className="z-10 bg-white bg-opacity-40 rounded-none border-0 shadow-none sm:rounded-xl sm:border sm:shadow">
         <CardHeader>
-          <CardTitle>Upload Images</CardTitle>
-          <CardDescription>Select, drag and drop, or paste file for upload.</CardDescription>
+          <CardTitle>上传图片</CardTitle>
+          <CardDescription>支持点击选择、拖拽或直接粘贴（Ctrl+V）图片</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <FileSelectZone
@@ -268,8 +266,6 @@ export function ImgUpload(
   );
 }
 
-type LinkType = 'url' | 'html' | 'markdown' | 'bbCode';
-
 function LinkCopyBox({ link, filename, onChange }: {
   link: string
   filename?: string
@@ -278,7 +274,7 @@ function LinkCopyBox({ link, filename, onChange }: {
   const inputRef = useRef<HTMLInputElement>(null);
   const [type, setType] = useState<LinkType>('url');
 
-  const copyLink = getLink(type, link, filename || 'image');
+  const copyLink = formatLink(type, link, filename || 'image');
 
   useEffect(() => {
     if (onChange)
@@ -299,7 +295,7 @@ function LinkCopyBox({ link, filename, onChange }: {
       <Input
         type="text"
         disabled={!link}
-        placeholder="Image URL"
+        placeholder="图片链接"
         ref={inputRef}
         className="flex-1"
         onFocus={handleInputFocus}
@@ -334,21 +330,6 @@ function LinkCopyBox({ link, filename, onChange }: {
       </DropdownMenu>
     </div>
   );
-}
-
-function getLink(type: LinkType, link: string, filename: string) {
-  switch (type) {
-    case 'url':
-      return link;
-    case 'html':
-      return `<img src="${link}" alt="${filename}" />`;
-    case 'bbCode':
-      return `[img]${link}[/img]`;
-    case 'markdown':
-      return `![${filename}](${link})`;
-    default:
-      return link;
-  }
 }
 
 function CodeIcon({ type, className }: { type: LinkType, className?: string }) {

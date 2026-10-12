@@ -1,4 +1,4 @@
-export function ChevronDownIcon(props: any) {
+export function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

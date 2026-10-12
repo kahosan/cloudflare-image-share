@@ -1,4 +1,4 @@
-export function UploadIcon(props: any) {
+export function UploadIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

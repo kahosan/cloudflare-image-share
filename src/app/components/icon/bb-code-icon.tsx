@@ -1,4 +1,4 @@
-export function BBCodeIcon(props: any) {
+export function BBCodeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

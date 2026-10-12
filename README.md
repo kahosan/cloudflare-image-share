@@ -4,28 +4,20 @@
 ![image](https://t.mx1700.com/file/StRCFKTWynky.jpeg)
 
 ## 特性
-- [X] ~~telegraph 支持下的无限图片储存空间~~
 - [X] 支持 Cloudflare R2 存储
-- [X] 密码保护，开启后有密码才能上传
-- [X] ~~telegraph 链接签名保护~~
+- [X] 密码保护，开启后有密码才能上传和管理
 - [X] github 部署
 - [X] ctrl+v 上传图片
 - [X] 图片压缩
+- [X] 文件管理：浏览、排序、复制链接（URL / Markdown / HTML / BBCode）、单个和批量删除
+- [X] 服务端校验：只接受真实的图片文件（JPG / PNG / GIF / WebP / AVIF），并限制文件大小
 - [ ] 增加暗色模式
 - [ ] 视频文件支持
 - [ ] 多文件上传
 - [ ] S3 后端支持
 
-~~telegraph 是匿名发布，所以图片一旦发布无法删除，永远可以直接通过 telegraph 域名访问。~~
-
-~~链接签名保护开启下，在 telegraph 直接上传的图片无法通过你的服务器代理访问，规避法律风险。~~
-
-目前 telegraph 已经停止图片上传服务，请使用 Cloudflare R2 存储后端。
-
-Cloudflare R2 免费空间 10GB，可以手动删除图片。
-
-
-[//]: # (## 为什么开发这个项目)
+> telegraph 已经停止图片上传服务，对应的存储后端已被移除，请使用 Cloudflare R2。
+> Cloudflare R2 免费空间 10GB，可以在「管理」页面手动删除图片。
 
 ## 如何部署
 1. fork 项目，在 Cloudflare Pages 创建新项目，选择 GitHub 作为代码仓库。
@@ -46,29 +38,40 @@ Cloudflare R2 免费空间 10GB，可以手动删除图片。
 
 注意：修改完环境变量后需要重新部署
 ```toml
-PASSWORD = "123456"                 # 访问密码，不设则可以公开上传
-SECRET_KEY = "my_secret_key"        # 图片签名密钥，打开链接签名保护时必填
-STORAGE_PROVIDER = "r2"             # 图片存储方式，目前支持 telegraph 和 r2
-TELEGRAPH_SIGN_ENABLED = "true"     # 是否开启 telegraph 链接签名保护
-MAX_IMAGE_SIZE = "20"               # 可上传的最大大小，单位 MB，默认 20 MB
+PASSWORD = "123456"                 # 访问密码，不设则任何人都可以公开上传和管理（不推荐）
+AUTH_SECRET = "a-long-random-string" # 登录凭证的签名密钥，强烈建议设置，见下方说明
+STORAGE_PROVIDER = "r2"             # 图片存储方式，目前只支持 r2（默认）
+MAX_IMAGE_SIZE = "20"               # 可上传的最大大小，单位 MB，默认 20 MB（服务端同样会校验）
 ENABLE_IMAGE_COMPRESSION = "true"   # 是否开启图片压缩，默认开启
-COMPRESSED_IMAGE_MAX_SIZE = "5"     # 压缩后的图片最大大小，单位 MB，默认 5 MB
+COMPRESSED_IMAGE_MAX_SIZE = "5"     # 超过该大小才会压缩，且压缩后不超过该大小，单位 MB，默认 5 MB
 MAX_IMAGE_WIDTH_OR_HEIGHT = "2560"  # 图片压缩后的最大宽度或高度，默认 2560
 ```
 
-~~当图片存储使用 telegraph 时，上传的文件最大不能超过 5MB，所以建议打开压缩。~~
-默认启用压缩，压缩后大小设置为 5 MB 时，建议宽高限制在 2560 像素。
+**关于 AUTH_SECRET**：登录成功后会签发一个 7 天有效的凭证（JWT）。
+- 设置了 `AUTH_SECRET` 后，凭证用它签名，凭证本身不包含任何可用于推算密码的信息；
+- 没有设置时，会回退为用 `PASSWORD` 派生密钥，如果密码很弱，凭证有被离线破解的风险；
+- 生成方式示例：`openssl rand -base64 32`；
+- 更换 `AUTH_SECRET` 会让所有已登录的设备重新登录。
 
+压缩只对超过 `COMPRESSED_IMAGE_MAX_SIZE` 的图片生效，GIF 不会被压缩（避免丢失动画）。
+压缩后大小设置为 5 MB 时，建议宽高限制在 2560 像素。
 
-![image](https://t.mx1700.com/file/EJBhKqdyJ4cs.jpeg)
-
-当使用 Cloudflare R2 时，需要配置R2 存储桶绑定，
+使用 Cloudflare R2 时，需要配置 R2 存储桶绑定，
 在 cloudflare pages 项目的 “设置” 页，
 左侧菜单选择函数，然后在页面里找到 “R2 存储桶绑定”
-填写 R2 存储桶名称```R2_BUCKET```和对应的存储桶，
+填写变量名称 ```R2_BUCKET``` 和对应的存储桶，
 然后点击 “保存”。
 
 ![image](https://t.mx1700.com/file/Oct63XBFQph5.jpeg)
+
+## 文件管理
+登录后点击右上角「管理」进入。
+- 按最新 / 最早 / 体积最大排序，顶部显示文件总数和总占用空间；
+- 每张图片可一键复制 URL、Markdown、HTML、BBCode；
+- 支持单个删除和多选批量删除，删除前需要二次确认；
+- 最多列出 5000 个文件。
+
+**注意**：图片响应带有 `Cache-Control: immutable`，删除文件后，已经缓存过它的浏览器 / CDN 在缓存过期前仍可能显示旧图片。
 
 ## 技术栈
 - Next.js

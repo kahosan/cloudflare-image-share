@@ -1,4 +1,4 @@
-export function MarkdownIcon(props: any) {
+export function MarkdownIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

@@ -2,37 +2,42 @@ import type { DragEvent } from 'react';
 import { getFileExtension } from '@/app/lib/utils';
 import { useToast } from '@/app/components/ui/use-toast';
 
-function FileDropZone({ ref, className, children, onFileDrop, accept, ...props }: React.HTMLAttributes<HTMLDivElement> & { onFileDrop: (files: FileList) => void, accept: string } & { ref?: React.RefObject<HTMLParagraphElement | null> }) {
+type FileDropZoneProps = React.HTMLAttributes<HTMLDivElement> & {
+  ref?: React.Ref<HTMLDivElement>
+  onFileDrop: (file: File) => void
+  /** 以逗号分隔的扩展名列表，如 ".jpg,.png" */
+  accept: string
+};
+
+function handleDragOver(event: DragEvent) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'copy';
+}
+
+function FileDropZone({ ref, className, children, onFileDrop, accept, ...props }: FileDropZoneProps) {
   const { toast } = useToast();
-
-  const handleDragOver = (event: DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
-  };
-
-  const handleDragLeave = (event: DragEvent) => {
-    event.preventDefault();
-  };
 
   const handleDrop = (event: DragEvent) => {
     event.preventDefault();
-    const files = event.dataTransfer.files;
-    const file = files[0];
+    // 拖入的可能不是文件（比如选中的文字），此时 files 为空
+    const file = event.dataTransfer.files.item(0);
+    if (!file)
+      return;
+
     if (accept && !checkFileType(file.name, accept)) {
       toast({
         variant: 'destructive',
-        title: 'File type not support.'
+        title: '不支持的文件类型'
       });
       return;
     }
-    onFileDrop(files);
+    onFileDrop(file);
   };
 
   return (
     <div
       ref={ref}
       onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={className}
       {...props}
@@ -42,16 +47,11 @@ function FileDropZone({ ref, className, children, onFileDrop, accept, ...props }
   );
 }
 
-FileDropZone.displayName = 'CardTitle';
+FileDropZone.displayName = 'FileDropZone';
 
 export default FileDropZone;
 
 function checkFileType(filename: string, accept: string) {
-  const allowTypes = accept.split(',').map(t => t.trim());
   const extName = '.' + getFileExtension(filename);
-  for (const type of allowTypes) {
-    if (type === extName)
-      return true;
-  }
-  return false;
+  return accept.split(',').some(type => type.trim() === extName);
 }

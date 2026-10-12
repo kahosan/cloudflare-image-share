@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: '山',
-  description: 'Private photo sharing app'
+  description: '私有图片分享（图床）'
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body className={inter.className}>
         <main>
           <Navbar />

@@ -19,9 +19,8 @@ pages_build_output_dir = ".vercel/output/static"
 [vars]
 # MY_VARIABLE = "production_value"
 PASSWORD = "123456"
-SECRET_KEY = "my_secret_key"
-STORAGE_PROVIDER = "telegraph"
-TELEGRAPH_SIGN_ENABLED = "true"
+AUTH_SECRET = "dev-only-change-me-to-a-long-random-string"
+STORAGE_PROVIDER = "r2"
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#workers-ai

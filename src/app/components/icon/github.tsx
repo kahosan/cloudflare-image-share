@@ -1,4 +1,4 @@
-export function GithubIcon(props: any) {
+export function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

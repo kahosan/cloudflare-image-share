@@ -1,29 +1,53 @@
 import type { NextRequest } from 'next/server';
-import { getStorageProvider } from '@/app/provider/storage-provider';
 import { NextResponse } from 'next/server';
-import { checkAuth } from '@/app/lib/auth';
-import { cookies } from 'next/headers';
+import { isAuthenticated } from '@/app/lib/auth';
+import { getConfig } from '@/app/lib/config';
+import { IMAGE_TYPES, IMAGE_TYPES_HINT, sniffImageType } from '@/app/lib/image-types';
+import { getStorageProvider } from '@/app/provider/storage-provider';
 
 export const runtime = 'edge';
 
+// multipart 的边界和字段头等额外开销，用于在解析 body 之前按 Content-Length 快速拒绝超大请求
+const MULTIPART_OVERHEAD = 64 * 1024;
+
+function fail(message: string, status: number) {
+  return NextResponse.json({ message }, { status });
+}
+
 export async function POST(request: NextRequest) {
-  const c = await cookies();
-  const isAuth = await checkAuth(c.get('token')?.value);
-  if (!isAuth)
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (!await isAuthenticated())
+    return fail('Unauthorized', 401);
 
-  const formData = await request.formData();
-  const file = formData.get('file') as File;
+  const { maxImageSize } = getConfig();
+  const maxBytes = maxImageSize * 1024 * 1024;
+  const tooLarge = () => fail(`文件大小超过限制（最大 ${maxImageSize} MB）`, 413);
 
-  const provider = getStorageProvider();
+  const contentLength = Number(request.headers.get('content-length'));
+  if (contentLength > maxBytes + MULTIPART_OVERHEAD)
+    return tooLarge();
+
+  const formData = await request.formData().catch(() => null);
+  const file = formData?.get('file');
+  if (!(file instanceof File) || file.size === 0)
+    return fail('未收到文件', 400);
+
+  if (file.size > maxBytes)
+    return tooLarge();
+
+  // 不信任客户端声明的文件名 / MIME，只认文件头魔数，并由此决定扩展名和 Content-Type
+  const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  const contentType = sniffImageType(head);
+  if (!contentType)
+    return fail(`不支持的文件类型，仅支持 ${IMAGE_TYPES_HINT}`, 415);
+
   try {
-    const key = await provider.save(file, file.name);
-    const query = key.query?.toString();
-    const fileUrl = query ? `${key.path}?${query}` : key.path;
-
-    return NextResponse.json({ key: fileUrl });
+    const key = await getStorageProvider().save(file, {
+      filename: file.name,
+      extension: IMAGE_TYPES[contentType].extension,
+      contentType
+    });
+    return NextResponse.json({ key: key.path });
   } catch (e) {
-    const error = e as Error;
-    return NextResponse.json({ message: error.message || 'Failed to upload file' }, { status: 500 });
+    return fail(e instanceof Error ? e.message : '上传失败', 500);
   }
 }

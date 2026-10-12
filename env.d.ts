@@ -4,9 +4,8 @@
 interface CloudflareEnv {
   R2_BUCKET?: R2Bucket
   PASSWORD?: string
-  SECRET_KEY?: string
+  AUTH_SECRET?: string
   STORAGE_PROVIDER?: string
-  TELEGRAPH_SIGN_ENABLED?: string
   MAX_IMAGE_SIZE?: string
   ENABLE_IMAGE_COMPRESSION?: string
   COMPRESSED_IMAGE_MAX_SIZE?: string

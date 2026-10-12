@@ -1,4 +1,4 @@
-export function HtmlIcon(props: any) {
+export function HtmlIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

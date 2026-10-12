@@ -1,4 +1,4 @@
-export function UrlIcon(props: any) {
+export function UrlIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
