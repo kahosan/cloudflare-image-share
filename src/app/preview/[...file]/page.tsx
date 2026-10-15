@@ -1,5 +1,3 @@
-export const runtime = 'edge';
-
 export default async function PreviewPage({ params }: { params: Promise<{ file: string[] }> }) {
   const p = await params;
   return (

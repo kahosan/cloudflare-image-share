@@ -5,8 +5,6 @@ import { getConfig } from '@/app/lib/config';
 import { IMAGE_TYPES, IMAGE_TYPES_HINT, sniffImageType } from '@/app/lib/image-types';
 import { getStorageProvider } from '@/app/provider/storage-provider';
 
-export const runtime = 'edge';
-
 // multipart 的边界和字段头等额外开销，用于在解析 body 之前按 Content-Length 快速拒绝超大请求
 const MULTIPART_OVERHEAD = 64 * 1024;
 

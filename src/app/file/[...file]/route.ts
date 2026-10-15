@@ -3,8 +3,6 @@ import { getStorageProvider } from '@/app/provider/storage-provider';
 import { getFileExtension } from '@/app/lib/utils';
 import { mimeFromExtension } from '@/app/lib/image-types';
 
-export const runtime = 'edge';
-
 const CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ file: string[] }> }) {

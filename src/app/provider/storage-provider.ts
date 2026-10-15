@@ -1,4 +1,5 @@
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
+
 import R2StorageProvider from '@/app/provider/r2-storage-provider';
 
 export interface FileKey {
@@ -50,7 +51,7 @@ export interface StorageProvider {
 }
 
 export function getStorageProvider(): StorageProvider {
-  const env = getRequestContext().env;
+  const env = getCloudflareContext().env;
   const providerCfg = env.STORAGE_PROVIDER || 'r2';
   if (providerCfg === 'telegraph')
     throw new Error('telegraph 已停止服务且相关代码已移除，请将 STORAGE_PROVIDER 改为 r2 并绑定 R2_BUCKET');

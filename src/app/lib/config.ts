@@ -1,4 +1,4 @@
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export interface AppConfig {
   /** 允许上传的最大文件大小，单位 MB */
@@ -19,7 +19,7 @@ function positiveNumber(value: string | undefined, fallback: number): number {
 
 /** 统一解析环境变量，缺省值与 README 保持一致；非法值（如 "abc"）回退到默认值而不是变成 NaN */
 export function getConfig(): AppConfig {
-  const env = getRequestContext().env;
+  const env = getCloudflareContext().env;
   return {
     maxImageSize: positiveNumber(env.MAX_IMAGE_SIZE, 20),
     enableImageCompression: env.ENABLE_IMAGE_COMPRESSION === undefined || env.ENABLE_IMAGE_COMPRESSION.toLowerCase() === 'true',

@@ -4,8 +4,6 @@ import { getStorageProvider } from '@/app/provider/storage-provider';
 import type { FileListResult } from '@/app/provider/storage-provider';
 import { FileManager } from '@/app/components/manager/file-manager';
 
-export const runtime = 'edge';
-
 function Notice({ title, children }: { title: string, children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-dashed px-6 py-16 text-center">

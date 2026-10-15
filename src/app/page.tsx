@@ -3,8 +3,6 @@ import { isAuthenticated } from '@/app/lib/auth';
 import { getConfig } from '@/app/lib/config';
 import { ImgUpload } from '@/app/components/img-upload';
 
-export const runtime = 'edge';
-
 export default async function Home() {
   if (!await isAuthenticated())
     redirect('/login');

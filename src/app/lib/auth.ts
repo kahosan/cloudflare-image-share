@@ -1,4 +1,4 @@
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { cookies } from 'next/headers';
 import * as jose from 'jose';
 
@@ -12,7 +12,7 @@ export const TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
  * - 未配置时回退为由 PASSWORD 派生的密钥（兼容旧部署），此时弱密码仍可能被离线爆破。
  */
 async function getSigningKey(): Promise<Uint8Array> {
-  const env = getRequestContext().env;
+  const env = getCloudflareContext().env;
   if (env.AUTH_SECRET)
     return encoder.encode(env.AUTH_SECRET);
 
@@ -32,7 +32,7 @@ async function safeEqual(a: string, b: string): Promise<boolean> {
 
 /** 密码正确则返回 token，否则返回 null */
 export async function login(password: unknown): Promise<string | null> {
-  const expected = getRequestContext().env.PASSWORD;
+  const expected = getCloudflareContext().env.PASSWORD;
   if (!expected || typeof password !== 'string')
     return null;
 
@@ -57,7 +57,7 @@ export async function checkToken(token: string): Promise<boolean> {
 }
 
 export async function checkAuth(token: string | undefined) {
-  if (!getRequestContext().env.PASSWORD)
+  if (!getCloudflareContext().env.PASSWORD)
     return true; // 未设置密码：公开模式
 
   if (!token)

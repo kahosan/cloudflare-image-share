@@ -18,6 +18,7 @@
     "types": [
       "@cloudflare/workers-types/2023-07-01"
     ],
+    "noUncheckedSideEffectImports": false,
     "resolveJsonModule": true,
     "allowJs": true,
     "noEmit": true,

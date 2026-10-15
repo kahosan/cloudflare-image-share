@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 import { isAuthenticated } from '@/app/lib/auth';
 import { getStorageProvider } from '@/app/provider/storage-provider';
 
-export const runtime = 'edge';
-
 const MAX_PATHS_PER_REQUEST = 1000;
 
 function parsePaths(body: unknown): string[] | null {

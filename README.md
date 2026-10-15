@@ -97,15 +97,5 @@ bun dev
 
 访问 [http://localhost:3000](http://localhost:3000) 
 
-## Next.js 部署到 Cloudflare 的兼容性问题
-
-- Cloudflare 所有动态页面和 api 都必须使用 edge 环境
-- next.js 的 server actions 为必须导出 async 函数
-
-Cloudflare 运行在 edge 环境，必须在文件内增加 export const runtime = 'edge'，
-而 next.js 编译器认为导出了一个同步函数（我认为这是 next.js bug），会导致部署失败，暂时无解，许等待 next.js 解决。
-
-所以目前无法使用 server actions，只能使用 api 来做后端。
-
 ## TODO
 - [ ] 尝试增加状态管理库 zustand
