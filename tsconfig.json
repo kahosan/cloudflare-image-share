@@ -15,9 +15,6 @@
         "./src/*"
       ]
     },
-    "types": [
-      "@cloudflare/workers-types/2023-07-01"
-    ],
     "noUncheckedSideEffectImports": false,
     "resolveJsonModule": true,
     "allowJs": true,
@@ -37,6 +34,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    "env.d.ts",
+    "cloudflare-env.d.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
